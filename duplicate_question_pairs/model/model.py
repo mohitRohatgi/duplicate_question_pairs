@@ -3,9 +3,9 @@ from duplicate_question_pairs.config.config import Config
 
 
 class Model:
-    def __init__(self, embeddings):
+    def __init__(self, vocab_size):
         self.config = Config()
-        self.embeddings = embeddings
+        self.vocab_size = vocab_size
         self.construct_model()
 
     def construct_model(self):
@@ -17,17 +17,25 @@ class Model:
             self.add_loss()
             self.add_train_op()
 
+    def initialise(self, sess, embedding):
+        sess.run(tf.global_variables_initializer())
+        sess.run(self.embedding_init, feed_dict={self.embedding_placeholder: embedding})
+
     def add_placeholders(self):
         self.input_placeholder_q1 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
         self.input_placeholder_q2 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
         self.label_placeholder = tf.placeholder(tf.int32, [self.config.batchSize, 1], name='label')
         self.dropout_placeholder = tf.placeholder(tf.float32, (), name='dropout_keep')
+        self.embedding_placeholder = tf.placeholder(tf.float32, [self.vocab_size, self.config.numDimensions])
 
     def add_embeddings(self):
         with tf.variable_scope("embeddings"):
-            data_q1 = tf.nn.embedding_lookup(self.embeddings, self.input_placeholder_q1)
+            self.word_embedding = tf.get_variable(shape=[self.vocab_size, self.config.numDimensions],
+                                                  trainable=False, name='embeddings')
+            self.embedding_init = self.word_embedding.assign(self.embedding_placeholder)
+            data_q1 = tf.nn.embedding_lookup(self.word_embedding, self.input_placeholder_q1)
             self.input_q1 = tf.cast(data_q1, tf.float32)
-            data_q2 = tf.nn.embedding_lookup(self.embeddings, self.input_placeholder_q2)
+            data_q2 = tf.nn.embedding_lookup(self.word_embedding, self.input_placeholder_q2)
             self.input_q2 = tf.cast(data_q2, tf.float32)
 
     def assemble_model(self):
@@ -67,7 +75,8 @@ class Model:
                                                                                   labels=self.label_placeholder))
 
     def add_train_op(self):
-        self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
+        with tf.variable_scope("training"):
+            self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
 
     def run_epoch(self, sess, q1_data, q2_data, is_train=True, label_data=None):
         if is_train:
