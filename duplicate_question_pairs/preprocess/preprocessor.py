@@ -21,7 +21,7 @@ def main():
     X, X_test, Y, Y_test = train_test_split(X, Y, test_size=0.2)
     X_train, X_valid, Y_train, Y_valid = train_test_split(X, Y, test_size=0.2)
     del X, Y
-    print("")
+    return X_train, X_valid, X_test, Y_train, Y_valid, Y_test, embed_construct
 
 
 if __name__ == '__main__':
