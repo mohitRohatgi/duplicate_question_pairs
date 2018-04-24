@@ -59,6 +59,7 @@ class Model:
             B = tf.get_variable(name="B", shape=[self.config.batchSize, ])
             scores = tf.add(tf.matmul(d, U), B)
             self.prediction = tf.argmax(name="prediction", input=scores)
+            self.accuracy = tf.reduce_mean(tf.equal(self.prediction, self.label_placeholder), name="accuracy")
 
     def add_loss(self):
         with tf.variable_scope("loss"):
@@ -66,7 +67,32 @@ class Model:
                                                                                   labels=self.label_placeholder))
 
     def add_train_op(self):
-        return tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
+        self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
 
-    def run_epoch(self, sess, data, is_train=True):
-        pass
+    def run_epoch(self, sess, q1_data, q2_data, is_train=True, label_data=None):
+        if is_train:
+            drop_keep = 1.0
+        else:
+            drop_keep = 1.0
+
+        if label_data is None:
+            feed_dict = {
+                self.input_placeholder_q1: q1_data,
+                self.input_placeholder_q2: q2_data,
+                self.dropout_placeholder: drop_keep
+            }
+            return sess.run([self.prediction, feed_dict])
+
+        feed_dict = {
+            self.input_placeholder_q1: q1_data,
+            self.input_placeholder_q2: q2_data,
+            self.label_placeholder: label_data,
+            self.dropout_placeholder: drop_keep
+        }
+
+        if is_train:
+            loss, accuracy, prediction, _ = sess.run([self.loss, self.accuracy, self.prediction, self.train_op],
+                                                     feed_dict)
+        else:
+            loss, accuracy, prediction = sess.run([self.loss, self.accuracy, self.prediction], feed_dict)
+        return loss, accuracy, prediction
