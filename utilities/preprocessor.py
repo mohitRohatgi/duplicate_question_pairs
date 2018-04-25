@@ -3,8 +3,8 @@ import pandas as pd
 import pickle
 
 from sklearn.model_selection import train_test_split
-from utilities.embedding_constructor import EmbeddingConstructor
-from utilities.utils import clean_question, index_text_to_word_id
+from .embedding_constructor import EmbeddingConstructor
+from .utils import clean_question, index_text_to_word_id
 
 
 def save_file(file_name, file_object):
@@ -40,18 +40,20 @@ def check_if_files_created(files):
     return True
 
 
-def preprocess(file_path, is_train=True):
+def preprocess(file_path, is_train=True, max_seq_length=20):
     if data_is_saved(is_train):
         return load_files(is_train)
-    filename = os.path.abspath(os.path.join(os.pardir, file_path))
+    filename = os.path.abspath(file_path)
     data = pd.read_csv(filename)
     embed_construct = EmbeddingConstructor().construct()
     Y = data.is_duplicate
     X = data.drop(columns=['is_duplicate', 'id'])
     X['question1'] = X['question1'].apply(lambda x: clean_question(x))
     X['question2'] = X['question2'].apply(lambda x: clean_question(x))
-    X['question1'] = index_text_to_word_id(X['question1'], embed_construct.word2Id, embed_construct.pad)
-    X['question2'] = index_text_to_word_id(X['question2'], embed_construct.word2Id, embed_construct.pad)
+    X['question1'] = index_text_to_word_id(X['question1'], embed_construct.word2Id, embed_construct.pad,
+                                           max_seq_length=max_seq_length)
+    X['question2'] = index_text_to_word_id(X['question2'], embed_construct.word2Id, embed_construct.pad,
+                                           max_seq_length=max_seq_length)
     Y = Y.apply(lambda x: int(x))
     X, X_test, Y, Y_test = train_test_split(X, Y, test_size=0.2)
     X_train, X_valid, Y_train, Y_valid = train_test_split(X, Y, test_size=0.2)

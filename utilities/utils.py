@@ -2,6 +2,8 @@ import re
 import numpy as np
 from nltk.stem.porter import PorterStemmer
 
+from utilities.text_representer import TextRepresenter
+
 
 def clean_question(question):
     question1_cleaned = clean_text(question.lower())
@@ -21,8 +23,8 @@ def index_text_to_word_id(sentences, word2_id, pad='pad', max_seq_length=20):
                 indices[i] = word2_id[word]
             else:
                 indices[i] = word2_id[pad]
-        sent_vectors.append(indices)
-    return sent_vectors
+        sent_vectors.append(TextRepresenter(sent, indices))
+    return np.array(sent_vectors)
 
 
 def clean_text(text):
@@ -58,5 +60,31 @@ def clean_text(text):
     return text
 
 
-def get_batch_data_iterator(n_epoch, data,seq_length, batch_size, mode='train'):
-    pass
+def get_batch_data(data, batch_size, is_question=False):
+    if is_question:
+        data = np.array([x.values for x in data])
+    indices = np.random.randint(0, len(data), batch_size)
+    return data[indices]
+
+
+def get_batch_data_iterator(n_epoch, data, batch_size, mode='train'):
+    if mode == 'train':
+        X_train, X_valid, Y_train, Y_valid = data
+        num_batches_per_epoch = int((len(X_train)) / batch_size) + 1
+        for i in range(n_epoch):
+            for j in range(num_batches_per_epoch):
+                question1_batch = get_batch_data(X_train['question1'].values, batch_size=batch_size, is_question=True)
+                question2_batch = get_batch_data(X_train['question2'].values, batch_size=batch_size, is_question=True)
+                qid1_batch = get_batch_data(X_train['qid1'].values, batch_size=batch_size)
+                qid2_batch = get_batch_data(X_train['qid2'].values, batch_size=batch_size)
+                train_batch_data = (question1_batch, question2_batch, qid1_batch, qid2_batch)
+                train_label_batch = get_batch_data(Y_train.values, batch_size=batch_size)
+                question1_batch = get_batch_data(X_valid['question1'].values, batch_size=batch_size, is_question=True)
+                question2_batch = get_batch_data(X_valid['question2'].values, batch_size=batch_size, is_question=True)
+                qid1_batch = get_batch_data(X_valid['qid1'].values, batch_size=batch_size)
+                qid2_batch = get_batch_data(X_valid['qid2'].values, batch_size=batch_size)
+                valid_batch_data = (question1_batch, question2_batch, qid1_batch, qid2_batch)
+                valid_label_batch = get_batch_data(Y_valid.values, batch_size=batch_size)
+                yield train_batch_data, train_label_batch, valid_batch_data, valid_label_batch
+    else:
+        X_test, Y_test = data

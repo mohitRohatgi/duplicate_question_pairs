@@ -11,18 +11,18 @@ from utilities.utils import get_batch_data_iterator
 
 def main():
     file_path = "data/train_small.csv"
-    X_train, X_valid, Y_train, Y_valid, embed_construct = preprocess(file_path)
     save_meta_graph = True
     config = Config()
+    X_train, X_valid, Y_train, Y_valid, embed_construct = preprocess(file_path, max_seq_length=config.maxSeqLength)
     logger = HistoryLogger(config)
     data_gen = get_batch_data_iterator(n_epoch=config.n_epoch, data=(X_train, X_valid, Y_train, Y_valid),
-                                       seq_length=config.maxSeqLength, batch_size=config.batchSize, mode='train')
+                                       batch_size=config.batchSize, mode='train')
     with tf.Graph().as_default() as graph:
         model = Model(len(embed_construct.embed_matrix))
         with tf.Session(graph=graph) as sess:
             model.initialise(sess, embed_construct.embed_matrix)
             step = 0
-            model_name = os.path.join(os.getcwd(), 'model')
+            model_name = os.path.join(os.getcwd(), 'modelname')
             model_no = int(time.time())
             model_name = os.path.join(model_name, str(model_no))
             logger_path = os.path.join(model_name, str(model_no))
@@ -35,8 +35,9 @@ def main():
             valid_data = []
             valid_label = []
             while train_batch_data is not None:
-                train_loss, train_accuracy, train_prediction = model.run_batch(sess, train_batch_data, True,
-                                                                               train_label_batch)
+                train_loss, train_accuracy, train_prediction = model.run_batch(sess=sess, train_batch_data=train_batch_data,
+                                                                               is_train=True, label_data=train_label_batch)
+                print("step = ", step, " loss = ", train_loss, " accuracy = ", train_accuracy)
                 valid_data.append(valid_batch_data)
                 valid_label.append(valid_batch_label)
                 step += 1

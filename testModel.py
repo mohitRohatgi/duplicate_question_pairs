@@ -15,7 +15,6 @@ def find_latest(model_name):
 
 def main():
     file_path = "data/train_small.csv"
-    X_test, Y_test, embed_construct = preprocess(file_path, is_train=False)
     start = time.time()
     model_name = os.path.join(os.getcwd(), 'model_name')
     model_name = find_latest(model_name)
@@ -24,8 +23,8 @@ def main():
     best_model = logger.best_model
     graph = tf.Graph()
     config = logger.config
-    data_gen = get_batch_data_iterator(n_epoch=1, data=(X_test, Y_test), seq_length=config.maxSeqLength,
-                                       batch_size=1, mode='train')
+    X_test, Y_test, embed_construct = preprocess(file_path, is_train=False, max_seq_length=config.maxSeqLength)
+    data_gen = get_batch_data_iterator(n_epoch=1, data=(X_test, Y_test), batch_size=1, mode='train')
     with graph.as_default():
         sess = tf.Session(graph=graph)
         with sess.as_default():

@@ -21,9 +21,11 @@ class Model:
         sess.run(self.embedding_init, feed_dict={self.embedding_placeholder: embed_matrix})
 
     def add_placeholders(self):
-        self.input_placeholder_q1 = tf.placeholder(tf.int32, [None, self.config.maxSeqLength])
-        self.input_placeholder_q2 = tf.placeholder(tf.int32, [None, self.config.maxSeqLength])
-        self.label_placeholder = tf.placeholder(tf.int64, [None, ], name='label')
+        self.input_placeholder_q1 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
+        self.input_placeholder_q2 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
+        self.qid1 = tf.placeholder(tf.int32, [self.config.batchSize, ])
+        self.qid2 = tf.placeholder(tf.int32, [self.config.batchSize, ])
+        self.label_placeholder = tf.placeholder(tf.int64, [self.config.batchSize, ], name='label')
         self.dropout_placeholder = tf.placeholder(tf.float32, (), name='dropout_keep')
         self.embedding_placeholder = tf.placeholder(tf.float32, [self.vocab_size, self.config.numDimensions])
 
@@ -61,9 +63,11 @@ class Model:
     def add_projection(self):
         d = tf.sqrt(tf.reduce_sum(tf.square(tf.subtract(self.question1_outputs, self.question2_outputs)),
                                   axis=1, keepdims=False))
+        d = tf.concat(values=[d, tf.to_float(tf.expand_dims(self.qid1, axis=1)),
+                              tf.to_float(tf.expand_dims(self.qid2, axis=1))], axis=1)
         with tf.variable_scope("linear"):
-            U = tf.get_variable(name="U", shape=[self.config.numDimensions, self.config.numClasses])
-            B = tf.get_variable(name="B", shape=[None, self.config.numClasses])
+            U = tf.get_variable(name="U", shape=[self.config.numDimensions + 2, self.config.numClasses])
+            B = tf.get_variable(name="B", shape=[self.config.batchSize, self.config.numClasses])
             self.scores = tf.add(tf.matmul(d, U), B, name='scores')
             self.prediction = tf.argmax(name="prediction", input=self.scores, axis=1)
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.label_placeholder), "float"),
@@ -79,16 +83,18 @@ class Model:
             self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
 
     def run_batch(self, sess, train_batch_data, is_train=True, label_data=None):
-        (q1_data, q2_data) = train_batch_data
+        (q1_data, q2_data, q1id, q2id) = train_batch_data
         if is_train:
-            drop_keep = 1.0
-        else:
             drop_keep = self.config.drop_keep
+        else:
+            drop_keep = 1.0
 
         if label_data is None:
             feed_dict = {
                 self.input_placeholder_q1: q1_data,
                 self.input_placeholder_q2: q2_data,
+                self.qid1: q1id,
+                self.qid2: q2id,
                 self.dropout_placeholder: drop_keep
             }
             return sess.run([self.prediction, feed_dict])
@@ -96,6 +102,8 @@ class Model:
         feed_dict = {
             self.input_placeholder_q1: q1_data,
             self.input_placeholder_q2: q2_data,
+            self.qid1: q1id,
+            self.qid2: q2id,
             self.label_placeholder: label_data,
             self.dropout_placeholder: drop_keep
         }
