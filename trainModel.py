@@ -10,7 +10,7 @@ from utilities.utils import get_batch_data_iterator
 
 
 def main():
-    file_path = "data/train_small.csv"
+    file_path = "data/train.csv"
     save_meta_graph = True
     config = Config()
     X_train, X_valid, Y_train, Y_valid, embed_construct = preprocess(file_path, max_seq_length=config.maxSeqLength)

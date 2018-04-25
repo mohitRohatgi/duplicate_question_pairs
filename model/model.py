@@ -6,6 +6,7 @@ class Model:
     def __init__(self, vocab_size):
         self.config = Config()
         self.vocab_size = vocab_size
+        self.optimizer = tf.train.AdamOptimizer(self.config.learning_rate)
         self.construct_model()
 
     def construct_model(self):
@@ -62,8 +63,10 @@ class Model:
                                                                                    initial_state=q2_initial_state)
 
     def add_projection(self):
-        d = tf.sqrt(tf.reduce_sum(tf.square(tf.subtract(self.question1_outputs, self.question2_outputs)),
-                                  axis=1, keepdims=False))
+        d = tf.exp(tf.multiply(tf.abs(tf.subtract(self.question1_final_state[-1][-1],
+                                                  self.question2_final_state[-1][-1])), -1))
+        # d = tf.sqrt(tf.reduce_sum(tf.square(tf.subtract(self.question1_outputs, self.question2_outputs)),
+        #                           axis=1, keepdims=False))
         d = tf.concat(values=[d, tf.to_float(tf.expand_dims(self.qid1, axis=1)),
                               tf.to_float(tf.expand_dims(self.qid2, axis=1))], axis=1)
         with tf.variable_scope("linear"):
@@ -81,7 +84,9 @@ class Model:
 
     def add_train_op(self):
         with tf.variable_scope("training"):
-            self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
+            grads, variables = zip(*self.optimizer.compute_gradients(self.loss))
+            grads, _ = tf.clip_by_global_norm(grads, self.config.gradient_clip_norm)
+            self.train_op = self.optimizer.apply_gradients(zip(grads, variables))
 
     def run_batch(self, sess, train_batch_data, is_train=True, label_data=None):
         (q1_data, q2_data, q1id, q2id) = train_batch_data

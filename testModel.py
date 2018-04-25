@@ -14,9 +14,8 @@ def find_latest(model_name):
 
 
 def main():
-    file_path = "data/train_small.csv"
+    file_path = "data/train.csv"
     start = time.time()
-    test_path = os.path.join(os.getcwd(), 'data/train_small.txt')
     model_name = os.path.join(os.getcwd(), 'saved_model')
     model_name = find_latest(model_name)
     logger = HistoryLogger.load(model_name)
