@@ -56,3 +56,6 @@ def clean_text(text):
     text = re.sub(r"j k", "jk", text)
     text = re.sub(r"\s{2,}", " ", text)
     return text
+
+def batch_iter(nepochs, X, Y=None):
+    pass
