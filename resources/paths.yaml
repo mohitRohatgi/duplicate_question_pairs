@@ -1,4 +1,4 @@
-embed_path: /Users/mohitrohatgi/Downloads/glove.6B/glove.6B.300d.txt
+embed_path: resources/glove.840B.300d.txt
 embed_matrix_path: resources/embed_matrix.pkl
 word2Id_path: resources/word2Id.pkl
 id2Word_path: resources/id2Word.pkl

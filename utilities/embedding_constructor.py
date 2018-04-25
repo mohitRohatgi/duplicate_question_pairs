@@ -17,7 +17,7 @@ class EmbeddingConstructor:
     def __init__(self):
         self.root_path = ROOT_DIR
         self.paths = self._get_paths()
-        self.embed_path = self.paths['embed_path']
+        self.embed_path = os.path.join(os.getcwd(), os.pardir, self.paths['embed_path'])
         self.embed_size = int(self.paths['embed_size'])
         self.word2Id_path = self._get_abs_path(self.paths['word2Id_path']) + '_' + str(self.embed_size)
         self.id2Word_path = self._get_abs_path(self.paths['id2Word_path']) + '_' + str(self.embed_size)
