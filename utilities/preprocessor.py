@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import pickle
 
-from duplicate_question_pairs.utilities.embedding_constructor import EmbeddingConstructor
-from duplicate_question_pairs.utilities.utils import clean_question, index_text_to_word_id
 from sklearn.model_selection import train_test_split
+from utilities.embedding_constructor import EmbeddingConstructor
+from utilities.utils import clean_question, index_text_to_word_id
 
 
 def save_file(file_name, file_object):
@@ -66,7 +66,3 @@ def preprocess(file_path, is_train=True):
     if is_train:
         return X_train, X_valid, Y_train, Y_valid, embed_construct
     return X_test, Y_test, embed_construct
-
-
-if __name__ == '__main__':
-    preprocess()

@@ -2,7 +2,7 @@ import yaml
 import numpy as np
 import os
 import pickle
-from duplicate_question_pairs.definitions import ROOT_DIR
+from definitions import ROOT_DIR
 
 
 """

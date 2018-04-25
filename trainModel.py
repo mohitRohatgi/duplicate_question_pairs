@@ -1,13 +1,12 @@
 import os
-
 import time
-
-from duplicate_question_pairs.config.config import Config
-from duplicate_question_pairs.model.model import Model
-from duplicate_question_pairs.utilities.history_logger import HistoryLogger
-from duplicate_question_pairs.utilities.preprocessor import preprocess
-
 import tensorflow as tf
+
+from config.config import Config
+from model.model import Model
+from utilities.history_logger import HistoryLogger
+from utilities.preprocessor import preprocess
+from utilities.utils import get_batch_data_iterator
 
 
 def main():

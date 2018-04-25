@@ -57,5 +57,6 @@ def clean_text(text):
     text = re.sub(r"\s{2,}", " ", text)
     return text
 
-def batch_iter(nepochs, X, Y=None):
+
+def get_batch_data_iterator(n_epoch, data,seq_length, batch_size, mode='train'):
     pass

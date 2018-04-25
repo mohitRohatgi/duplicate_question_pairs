@@ -2,8 +2,9 @@ import os
 import time
 import tensorflow as tf
 
-from duplicate_question_pairs.utilities.history_logger import HistoryLogger
-from duplicate_question_pairs.utilities.preprocessor import preprocess
+from utilities.history_logger import HistoryLogger
+from utilities.preprocessor import preprocess
+from utilities.utils import get_batch_data_iterator
 
 
 def find_latest(model_name):

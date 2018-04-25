@@ -1,5 +1,5 @@
 import tensorflow as tf
-from duplicate_question_pairs.config.config import Config
+from config.config import Config
 
 
 class Model:
@@ -21,9 +21,9 @@ class Model:
         sess.run(self.embedding_init, feed_dict={self.embedding_placeholder: embed_matrix})
 
     def add_placeholders(self):
-        self.input_placeholder_q1 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
-        self.input_placeholder_q2 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
-        self.label_placeholder = tf.placeholder(tf.int64, [self.config.batchSize, ], name='label')
+        self.input_placeholder_q1 = tf.placeholder(tf.int32, [None, self.config.maxSeqLength])
+        self.input_placeholder_q2 = tf.placeholder(tf.int32, [None, self.config.maxSeqLength])
+        self.label_placeholder = tf.placeholder(tf.int64, [None, ], name='label')
         self.dropout_placeholder = tf.placeholder(tf.float32, (), name='dropout_keep')
         self.embedding_placeholder = tf.placeholder(tf.float32, [self.vocab_size, self.config.numDimensions])
 
@@ -63,7 +63,7 @@ class Model:
                                   axis=1, keepdims=False))
         with tf.variable_scope("linear"):
             U = tf.get_variable(name="U", shape=[self.config.numDimensions, self.config.numClasses])
-            B = tf.get_variable(name="B", shape=[self.config.batchSize, self.config.numClasses])
+            B = tf.get_variable(name="B", shape=[None, self.config.numClasses])
             self.scores = tf.add(tf.matmul(d, U), B, name='scores')
             self.prediction = tf.argmax(name="prediction", input=self.scores, axis=1)
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.prediction, self.label_placeholder), "float"),
