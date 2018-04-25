@@ -111,6 +111,7 @@ class EmbeddingConstructor:
         pickle.dump(self.embed_matrix, embedding_matrix_file)
         embedding_matrix_file.close()
 
+
 def test():
     embedding_constructor = EmbeddingConstructor()
     embedding_constructor.construct()

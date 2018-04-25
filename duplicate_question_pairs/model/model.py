@@ -78,7 +78,8 @@ class Model:
         with tf.variable_scope("training"):
             self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss)
 
-    def run_epoch(self, sess, q1_data, q2_data, is_train=True, label_data=None):
+    def run_batch(self, sess, train_batch_data, is_train=True, label_data=None):
+        (q1_data, q2_data) = train_batch_data
         if is_train:
             drop_keep = 1.0
         else:

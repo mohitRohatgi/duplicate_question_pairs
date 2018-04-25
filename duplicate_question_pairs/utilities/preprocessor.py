@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import pickle
 
-from duplicate_question_pairs.preprocess.embedding_constructor import EmbeddingConstructor
-from duplicate_question_pairs.preprocess.utils import clean_question, index_text_to_word_id
+from duplicate_question_pairs.utilities.embedding_constructor import EmbeddingConstructor
+from duplicate_question_pairs.utilities.utils import clean_question, index_text_to_word_id
 from sklearn.model_selection import train_test_split
 
 
