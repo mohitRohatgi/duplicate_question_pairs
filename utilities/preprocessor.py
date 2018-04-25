@@ -13,11 +13,14 @@ def save_file(file_name, file_object):
     file.close()
 
 
-def load_files(is_train):
+def load_files(is_train, is_label):
     if is_train:
         filenames = ['X_train', 'X_valid', 'Y_train', 'Y_valid', 'embed_construct']
     else:
-        filenames = ['X_test', 'Y_test', 'embed_construct']
+        if is_label:
+            filenames = ['X_test', 'Y_test', 'embed_construct']
+        else:
+            filenames = ['X_test', 'embed_construct']
     files = []
     for filename in filenames:
         with open(os.path.join('resources', filename + '.pkl'), "rb") as file:
@@ -40,9 +43,9 @@ def check_if_files_created(files):
     return True
 
 
-def preprocess(file_path, is_train=True, max_seq_length=20, refresh=False):
+def preprocess(file_path, is_train=True, max_seq_length=20, refresh=False, is_label=True):
     if data_is_saved(is_train) and not refresh:
-        return load_files(is_train)
+        return load_files(is_train, is_label)
     filename = os.path.abspath(file_path)
     data = pd.read_csv(filename)
     embed_construct = EmbeddingConstructor().construct()
@@ -67,4 +70,6 @@ def preprocess(file_path, is_train=True, max_seq_length=20, refresh=False):
     save_file('embed_construct', embed_construct)
     if is_train:
         return X_train, X_valid, Y_train, Y_valid, embed_construct
-    return X_test, Y_test, embed_construct
+    if is_label:
+        return X_test, Y_test, embed_construct
+    return X_test, embed_construct

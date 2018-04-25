@@ -21,13 +21,14 @@ class Model:
         sess.run(self.embedding_init, feed_dict={self.embedding_placeholder: embed_matrix})
 
     def add_placeholders(self):
-        self.input_placeholder_q1 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
-        self.input_placeholder_q2 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength])
-        self.qid1 = tf.placeholder(tf.int32, [self.config.batchSize, ])
-        self.qid2 = tf.placeholder(tf.int32, [self.config.batchSize, ])
+        self.input_placeholder_q1 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength], name='q1')
+        self.input_placeholder_q2 = tf.placeholder(tf.int32, [self.config.batchSize, self.config.maxSeqLength], name='q2')
+        self.qid1 = tf.placeholder(tf.int32, [self.config.batchSize, ], name='qid1')
+        self.qid2 = tf.placeholder(tf.int32, [self.config.batchSize, ], name='qid2')
         self.label_placeholder = tf.placeholder(tf.int64, [self.config.batchSize, ], name='label')
         self.dropout_placeholder = tf.placeholder(tf.float32, (), name='dropout_keep')
-        self.embedding_placeholder = tf.placeholder(tf.float32, [self.vocab_size, self.config.numDimensions])
+        self.embedding_placeholder = tf.placeholder(tf.float32, [self.vocab_size, self.config.numDimensions],
+                                                    name='embed_matrix')
 
     def add_embeddings(self):
         with tf.variable_scope("embeddings"):

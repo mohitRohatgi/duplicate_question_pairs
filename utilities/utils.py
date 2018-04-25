@@ -60,17 +60,25 @@ def clean_text(text):
     return text
 
 
-def get_batch_data(X, Y, batch_size):
-    indices = np.random.randint(0, len(X), batch_size)
+def get_batch_data(X, batch_size, Y=None, random=True, start=0):
+    if random:
+        indices = np.random.randint(0, len(X), batch_size)
+    else:
+        indices = range(start, min(start + batch_size, len(X)))
+        while len(indices) < batch_size:
+            indices = list(indices)
+            indices += [0]
     question1_batch = np.array([x.values for x in X['question1'].values[indices]])
     question2_batch = np.array([x.values for x in X['question2'].values[indices]])
     qid1_batch = X['qid1'].values[indices]
     qid2_batch = X['qid2'].values[indices]
+    if Y is None:
+        return (question1_batch, question2_batch, qid1_batch, qid2_batch), None
     train_label_batch = Y.values[indices]
     return (question1_batch, question2_batch, qid1_batch, qid2_batch), train_label_batch
 
 
-def get_batch_data_iterator(n_epoch, data, batch_size, mode='train'):
+def get_batch_data_iterator(n_epoch, data, batch_size, mode='train', is_label=True):
     if mode == 'train':
         X_train, X_valid, Y_train, Y_valid = data
         num_batches_per_epoch = int((len(X_train)) / batch_size) + 1
@@ -80,4 +88,12 @@ def get_batch_data_iterator(n_epoch, data, batch_size, mode='train'):
                 valid_batch_data, valid_label_batch = get_batch_data(X=X_valid, Y=Y_valid, batch_size=batch_size)
                 yield train_batch_data, train_label_batch, valid_batch_data, valid_label_batch
     else:
-        X_test, Y_test = data
+        if is_label:
+            X_test, Y_test = data
+        else:
+            X_test = data
+            Y_test = None
+        num_batches_per_epoch = int((len(X_test)) / batch_size) + 1
+        for j in range(num_batches_per_epoch):
+            start = j * batch_size
+            yield get_batch_data(X=X_test, Y=Y_test, batch_size=batch_size, random=False, start=start)
