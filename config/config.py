@@ -1,5 +1,5 @@
 class Config:
-    batchSize = 20
+    batchSize = 5
     numClasses = 2
     iterations = 100000
     numDimensions = 300

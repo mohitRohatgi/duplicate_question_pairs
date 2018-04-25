@@ -22,7 +22,7 @@ def main():
         with tf.Session(graph=graph) as sess:
             model.initialise(sess, embed_construct.embed_matrix)
             step = 0
-            model_name = os.path.join(os.getcwd(), 'modelname')
+            model_name = os.path.join(os.getcwd(), 'saved_model')
             model_no = int(time.time())
             model_name = os.path.join(model_name, str(model_no))
             logger_path = os.path.join(model_name, str(model_no))

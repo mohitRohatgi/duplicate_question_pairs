@@ -40,8 +40,8 @@ def check_if_files_created(files):
     return True
 
 
-def preprocess(file_path, is_train=True, max_seq_length=20):
-    if data_is_saved(is_train):
+def preprocess(file_path, is_train=True, max_seq_length=20, refresh=False):
+    if data_is_saved(is_train) and not refresh:
         return load_files(is_train)
     filename = os.path.abspath(file_path)
     data = pd.read_csv(filename)
@@ -61,9 +61,9 @@ def preprocess(file_path, is_train=True, max_seq_length=20):
     save_file('X_train', X_train)
     save_file('X_valid', X_valid)
     save_file('X_test', X_test)
-    save_file('Y_train', X_train)
-    save_file('Y_valid', X_valid)
-    save_file('Y_test', X_test)
+    save_file('Y_train', Y_train)
+    save_file('Y_valid', Y_valid)
+    save_file('Y_test', Y_test)
     save_file('embed_construct', embed_construct)
     if is_train:
         return X_train, X_valid, Y_train, Y_valid, embed_construct
